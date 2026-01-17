@@ -1,0 +1,163 @@
+:root {
+    --primary: #74ACDF;
+    /* Celeste Argentina */
+    --secondary: #FFFFFF;
+    --accent: #FFB81C;
+    /* Sol de Mayo */
+    --bg: #0A0A0A;
+    --card-bg: rgba(255, 255, 255, 0.1);
+    --glass: rgba(255, 255, 255, 0.05);
+    --text: #FFFFFF;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+    touch-action: none;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+h1 span {
+    color: var(--primary);
+}
+
+#stats {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-item {
+    background: var(--card-bg);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#gameCanvas {
+    background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    flex: 1;
+    cursor: crosshair;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: opacity 0.3s ease;
+}
+
+#overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#overlay-content {
+    text-align: center;
+    background: var(--glass);
+    padding: 40px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, var(--secondary), var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#overlay-message {
+    margin-bottom: 30px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#start-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#start-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(116, 172, 223, 0.4);
+}
+
+footer {
+    position: fixed;
+    bottom: 10px;
+    font-size: 0.8rem;
+    opacity: 0.5;
+}
+
+@keyframes paddleFlash {
+    0% {
+        filter: brightness(1) drop-shadow(0 0 0px #fff);
+    }
+
+    50% {
+        filter: brightness(3) drop-shadow(0 0 15px #fff);
+    }
+
+    100% {
+        filter: brightness(1) drop-shadow(0 0 0px #fff);
+    }
+}
+
+.paddle-flash {
+    animation: paddleFlash 0.3s ease-out;
+}

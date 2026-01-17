@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Argenoid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="game-container">
+        <header>
+            <h1>Arge<span>noid</span></h1>
+            <div id="stats">
+                <div class="stat-item">PUNTOS: <span id="score">0</span></div>
+                <div class="stat-item">VIDAS: <span id="lives">3</span></div>
+            </div>
+        </header>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="overlay">
+            <div id="overlay-content">
+                <h2 id="overlay-title">ARGENOID</h2>
+                <p id="overlay-message">Tocá para empezar</p>
+                <button id="start-btn">JUGAR</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Hecho tomando 🧉
+    </footer>
+
+    <script src="game.js"></script>
+</body>
+
+</html>
