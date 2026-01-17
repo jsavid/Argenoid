@@ -7,6 +7,22 @@ const startBtn = document.getElementById('start-btn');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayMessage = document.getElementById('overlay-message');
 
+// Polyfill for roundRect (compatibility for older mobile browsers)
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.beginPath();
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+        return this;
+    };
+}
+
 // Game state
 let score = 0;
 let lives = 3;
@@ -106,11 +122,22 @@ const POWERUP_TYPES = [
 // Resize canvas to match display size
 function resize() {
     const container = canvas.parentElement;
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight - 80; // Adjust for header
+    const dpr = window.devicePixelRatio || 1;
+    const rect = container.getBoundingClientRect();
 
-    paddle.x = (canvas.width - paddle.width) / 2;
-    paddle.y = canvas.height - 30;
+    // Set display size (css pixels)
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = (rect.height - 80) + 'px';
+
+    // Set actual resolution
+    canvas.width = rect.width * dpr;
+    canvas.height = (rect.height - 80) * dpr;
+
+    // Scale context
+    ctx.scale(dpr, dpr);
+
+    paddle.x = (rect.width - paddle.width) / 2;
+    paddle.y = (rect.height - 110);
 
     if (!gameRunning) {
         initBricks();
@@ -118,7 +145,8 @@ function resize() {
 }
 
 function initBricks() {
-    const brickWidth = (canvas.width - (brickOffsetLeft * 2) - ((brickColumnCount - 1) * brickPadding)) / brickColumnCount;
+    const rect = canvas.getBoundingClientRect();
+    const brickWidth = (rect.width - (brickOffsetLeft * 2) - ((brickColumnCount - 1) * brickPadding)) / brickColumnCount;
     const brickHeight = 25;
 
     bricks = [];
@@ -126,21 +154,13 @@ function initBricks() {
         bricks[c] = [];
         for (let r = 0; r < brickRowCount; r++) {
             bricks[c][r] = {
-                x: 0,
-                y: 0,
+                x: (c * (brickWidth + brickPadding)) + brickOffsetLeft,
+                y: (r * (brickHeight + brickPadding)) + brickOffsetTop,
+                w: brickWidth,
+                h: brickHeight,
                 status: 1,
                 color: r % 2 === 0 ? '#74ACDF' : '#FFFFFF' // Light blue and white stripes
             };
-        }
-    }
-
-    // Set actual brick positions
-    for (let c = 0; c < brickColumnCount; c++) {
-        for (let r = 0; r < brickRowCount; r++) {
-            bricks[c][r].x = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
-            bricks[c][r].y = (r * (brickHeight + brickPadding)) + brickOffsetTop;
-            bricks[c][r].w = brickWidth;
-            bricks[c][r].h = brickHeight;
         }
     }
 }
@@ -159,23 +179,22 @@ function createBall() {
 // Input handling
 function movePaddle(e) {
     const rect = canvas.getBoundingClientRect();
-    let relativeX;
+    let clientX;
     if (e.type === 'touchmove') {
-        relativeX = e.touches[0].clientX - rect.left;
+        clientX = e.touches[0].clientX;
     } else {
-        relativeX = e.clientX - rect.left;
+        clientX = e.clientX;
     }
 
-    // Scale relativeX based on canvas internal resolution vs visual size
-    relativeX = relativeX * (canvas.width / rect.width);
+    const relativeX = (clientX - rect.left);
 
-    if (relativeX > 0 && relativeX < canvas.width) {
+    if (relativeX > 0 && relativeX < rect.width) {
         paddle.x = relativeX - (getTotalPaddleWidth() / 2);
 
         // Boundaries
         const totalW = getTotalPaddleWidth();
         if (paddle.x < 0) paddle.x = 0;
-        if (paddle.x + totalW > canvas.width) paddle.x = canvas.width - totalW;
+        if (paddle.x + totalW > rect.width) paddle.x = rect.width - totalW;
     }
 }
 
@@ -280,7 +299,7 @@ function spawnPowerUp(x, y) {
         y: y,
         w: 30,
         h: 30,
-        dy: 2, // Caída de power-ups a mitad de velocidad
+        dy: 2.5, // Velocidad de caída proporcional a la nueva escala
         ...type
     });
 }
@@ -294,12 +313,13 @@ function drawPowerUps() {
         ctx.fillText(p.symbol, p.x, p.y);
 
         // Paddle collision
+        const rect = canvas.getBoundingClientRect();
         if (p.y + 15 > paddle.y && p.x > paddle.x && p.x < paddle.x + getTotalPaddleWidth()) {
             applyPowerUp(p.effect);
             triggerPaddleFlash();
             SoundManager.playPowerUp();
             powerUps.splice(index, 1);
-        } else if (p.y > canvas.height) {
+        } else if (p.y > rect.height) {
             powerUps.splice(index, 1);
         }
     });
@@ -316,8 +336,9 @@ function applyPowerUp(effect) {
             });
         }
     } else if (effect === 'expand-paddle') {
+        const rect = canvas.getBoundingClientRect();
         paddle.width += 40;
-        if (paddle.width > canvas.width * 0.9) paddle.width = canvas.width * 0.9;
+        if (paddle.width > rect.width * 0.9) paddle.width = rect.width * 0.9;
         // Permanente
     } else if (effect === 'enlarge-ball') {
         balls.forEach(ball => {
@@ -334,7 +355,8 @@ function applyPowerUp(effect) {
 function draw() {
     if (paused) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const rect = canvas.getBoundingClientRect();
+    ctx.clearRect(0, 0, rect.width, rect.height);
 
     drawBricks();
     drawPaddle();
@@ -344,7 +366,8 @@ function draw() {
         drawBall(ball);
 
         // Wall collisions
-        if (ball.x + ball.dx > canvas.width - ball.radius || ball.x + ball.dx < ball.radius) {
+        const rect = canvas.getBoundingClientRect();
+        if (ball.x + ball.dx > rect.width - ball.radius || ball.x + ball.dx < ball.radius) {
             ball.dx = -ball.dx;
             SoundManager.playBounce();
         }
@@ -368,7 +391,7 @@ function draw() {
                 let hitPos = (ball.x - (paddle.x + totalW / 2)) / (totalW / 2);
                 ball.dx = hitPos * BALL_SPEED_DEFAULT;
                 ball.dy = -Math.abs(ball.dy);
-            } else if (ball.y + ball.dy > canvas.height - ball.radius) {
+            } else if (ball.y + ball.dy > rect.height - ball.radius) {
                 balls.splice(index, 1);
             }
         }
