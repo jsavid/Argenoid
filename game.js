@@ -137,7 +137,7 @@ function resize() {
     ctx.scale(dpr, dpr);
 
     paddle.x = (rect.width - paddle.width) / 2;
-    paddle.y = (rect.height - 110);
+    paddle.y = (rect.height - 150);
 
     if (!gameRunning) {
         initBricks();
@@ -217,8 +217,14 @@ function drawPaddle() {
 
     for (let i = 0; i < paddle.count; i++) {
         const xPos = paddle.x + (i * (paddle.width + PADDLE_GAP));
+
+        // Use standard drawing if roundRect acts up
         ctx.beginPath();
-        ctx.roundRect(xPos, paddle.y, paddle.width, paddle.height, 10);
+        if (ctx.roundRect) {
+            ctx.roundRect(xPos, paddle.y, paddle.width, paddle.height, 8);
+        } else {
+            ctx.rect(xPos, paddle.y, paddle.width, paddle.height);
+        }
         ctx.fill();
         ctx.stroke();
         ctx.closePath();
@@ -418,7 +424,7 @@ function resetBall() {
     balls = [createBall()];
     paused = true;
     overlayTitle.innerText = "¡PREPARATE!";
-    overlayMessage.innerText = "Toca para lanzar la bola";
+    overlayMessage.innerText = "Toca para lanzar la pelota";
     startBtn.innerText = "LANZAR";
     overlay.classList.remove('hidden');
 }
@@ -428,7 +434,7 @@ function gameOver(title, msg) {
     gameRunning = false;
     overlayTitle.innerText = title;
     overlayMessage.innerText = `${msg} | Puntos: ${score}`;
-    startBtn.innerText = "VOLVER A INTENTAR";
+    startBtn.innerText = "SEGUI PARTICIPANDO";
     overlay.classList.remove('hidden');
 }
 
