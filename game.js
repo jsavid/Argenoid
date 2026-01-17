@@ -410,7 +410,7 @@ function draw() {
         lives--;
         livesEl.innerText = lives;
         if (lives <= 0) {
-            gameOver("FINAL DEL PARTIDO", "Te quedaste sin vidas. ¿Otro?");
+            gameOver("FINAL DEL PARTIDO", "Te quedaste sin copas. ¿Otro?");
         } else {
             resetBall();
         }
