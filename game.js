@@ -116,7 +116,7 @@ const POWERUP_TYPES = [
     { name: 'Mate', symbol: '🧉', color: '#4CAF50', effect: 'multi-ball' },
     { name: 'Copa', symbol: '🏆', color: '#FFD700', effect: 'expand-paddle' },
     { name: 'Empanada', symbol: '🥟', color: '#FFB81C', effect: 'enlarge-ball' },
-    { name: 'Asado', symbol: '🥩', color: '#F44336', effect: 'split-paddle' }
+    { name: 'Asado', symbol: '🥩', color: '#F44336', effect: 'shrink-paddle' }
 ];
 
 // Resize canvas to match display size
@@ -352,9 +352,9 @@ function applyPowerUp(effect) {
             if (ball.radius > 40) ball.radius = 40;
         });
         // Permanente
-    } else if (effect === 'split-paddle') {
-        paddle.count *= 2; // Duplicar cantidad de barras
-        if (paddle.count > 8) paddle.count = 8; // Límite para no romper el juego
+    } else if (effect === 'shrink-paddle') {
+        paddle.width -= 30;
+        if (paddle.width < 40) paddle.width = 40;
     }
 }
 
